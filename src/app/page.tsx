@@ -49,6 +49,7 @@ const gallery = [
 
 const events = [
   ["23 Mei", "Nonton bareng Persib Bandung menuju hattrick juara", "Sukabumi Kota"],
+  ["Coming Soon", "Trip Ujung Genteng", "Pantai Ujung Genteng"],
 ];
 
 const countdownMonth = "05";
