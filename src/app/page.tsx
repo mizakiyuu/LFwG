@@ -23,8 +23,13 @@ const members = [
   { name: "salji GSI", role: "Member JRX" },
   { name: "Apep WIFI", role: "Member JRX" },
   { name: "Rendi WIFI", role: "Member JRX" },
-  { name: "Ugi info loker", role: "Member JRX" },
+  { name: "Ugi BUMN", role: "Member JRX" },
   { name: "Aden Freshgraduate", role: "Member JRX" },
+  { name: "Atep sayang keluarga", role: "Member JRX" },
+  { name: "Fajri MBG", role: "Member JRX" },
+  { name: "Inoy Service Center", role: "Member JRX" },
+  { name: "Maul Tongoh", role: "Member JRX" },
+  { name: "Ucup perantau", role: "Member JRX" },
 ];
 
 const gallery = [
@@ -46,10 +51,21 @@ const events = [
   ["23 Mei", "Nonton bareng Persib Bandung menuju hattrick juara", "Sukabumi Kota"],
 ];
 
-const countdownTarget = new Date("2026-05-23T16:00:00+07:00").getTime();
+const countdownMonth = "05";
+const countdownDay = "23";
+const countdownTime = "16:00:00+07:00";
 
 function getCountdown() {
-  const distance = Math.max(countdownTarget - Date.now(), 0);
+  const now = Date.now();
+  let year = 2026;
+  let target = new Date(`${year}-${countdownMonth}-${countdownDay}T${countdownTime}`).getTime();
+
+  while (target <= now) {
+    year += 1;
+    target = new Date(`${year}-${countdownMonth}-${countdownDay}T${countdownTime}`).getTime();
+  }
+
+  const distance = Math.max(target - now, 0);
   const days = Math.floor(distance / (1000 * 60 * 60 * 24));
   const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((distance / (1000 * 60)) % 60);
@@ -65,12 +81,7 @@ function getCountdown() {
 
 export default function Home() {
   const rootRef = useRef<HTMLElement>(null);
-  const [countdown, setCountdown] = useState(() => [
-    { label: "Hari", value: "00" },
-    { label: "Jam", value: "00" },
-    { label: "Menit", value: "00" },
-    { label: "Detik", value: "00" },
-  ]);
+  const [countdown, setCountdown] = useState(getCountdown);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -127,7 +138,7 @@ export default function Home() {
           <a href="#beranda" className="brand-mark">
             JRX
           </a>
-          <div className="hidden items-center gap-5 lg:flex">
+          <div className="nav-links">
             {navItems.map(([label, id]) => (
               <a key={id} href={`#${id}`} className="nav-link text-white/80 transition">
                 {label}
@@ -166,7 +177,7 @@ export default function Home() {
       </section>
 
       <section className="content-start product-tile product-tile-parchment px-4">
-        <div className="mx-auto grid w-[min(980px,100%)] gap-5 md:grid-cols-4">
+        <div className="mx-auto grid w-[min(980px,100%)] grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
           {[
             ["16", "Member aktif"],
             ["12", "Agenda tahun ini"],
@@ -214,7 +225,7 @@ export default function Home() {
             <h2 className="serif-section-title">Profil member.</h2>
             <a href="#kontak" className="text-link-on-dark">Gabung circle</a>
           </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
             {members.map((member, index) => (
               <article key={member.name} className="member-card">
                 <div className="avatar">{member.name.slice(0, 1)}</div>
@@ -231,7 +242,7 @@ export default function Home() {
         <div className="mx-auto w-[min(980px,100%)]">
         <p className="section-label">Galeri</p>
         <h2 className="serif-section-title">Momen nongkrong, futsal, dan healing atau camping.</h2>
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
           {gallery.map((item) => (
             <article key={item.title} className="gallery-card overflow-hidden bg-white">
               {item.image ? (
