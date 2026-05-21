@@ -360,7 +360,7 @@ Konvoi 24 jam tanpa aturan 🔥
           <div>
             <p className="section-label">Kontak</p>
             <h2 className="serif-section-title">Admin & media sosial.</h2>
-            <p className="mt-4 text-[12px] leading-none text-white/60">WhatsApp: 0812-0000-2026 · Instagram: @jrxcircle · Email: admin@jrx.test</p>
+            <p className="mt-4 text-[12px] leading-none text-white/60">WhatsApp: 089627269155 · Instagram: @0xlfwg · Email: mughnialmuzaki74@gmail.com</p>
           </div>
           <a href="#beranda" className="primary-chip">Kembali ke atas</a>
         </div>
