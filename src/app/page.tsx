@@ -56,14 +56,11 @@ function getCountdown() {
   const seconds = Math.floor((distance / 1000) % 60);
 
   return [
-    ["Hari", days],
-    ["Jam", hours],
-    ["Menit", minutes],
-    ["Detik", seconds],
-  ].map(([label, value]) => ({
-    label,
-    value: String(value).padStart(2, "0"),
-  }));
+    { label: "Hari", value: String(days).padStart(2, "0") },
+    { label: "Jam", value: String(hours).padStart(2, "0") },
+    { label: "Menit", value: String(minutes).padStart(2, "0") },
+    { label: "Detik", value: String(seconds).padStart(2, "0") },
+  ];
 }
 
 export default function Home() {
