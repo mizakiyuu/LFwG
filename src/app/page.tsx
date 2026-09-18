@@ -35,54 +35,125 @@ const members = [
 const gallery = [
   {
     title: "Nongkrong Malam Minggu",
-    image: "",
+    images: [],
+    description: "Momen kumpul santai bareng anak-anak JRX, dari obrolan ringan sampai rencana kegiatan berikutnya.",
+    exif: {
+      date: "Dokumentasi komunitas",
+      location: "Tongkrongan JRX",
+      camera: "Arsip kegiatan",
+      activity: "Nongkrong",
+    },
   },
   {
     title: "Futsal Rutin",
-    image: "",
+    images: [],
+    description: "Agenda olahraga bareng untuk jaga kompak, sehat, dan tetap ramai di luar tongkrongan.",
+    exif: {
+      date: "Dokumentasi komunitas",
+      location: "Lapangan futsal",
+      camera: "Arsip kegiatan",
+      activity: "Futsal",
+    },
   },
   {
-    title: "Healing atau Camping",
-    image: "",
+    title: "Healling",
+    images: ["/images/pantai.png", "/images/pantai2.png"],
+    description: "Pada tahun 2021, JRX melakukan perjalanan ke kawasan Geopark Ciletuh untuk menikmati suasana pantai dan melepas penat bersama.",
+    exif: {
+      date: "2021",
+      location: "Geopark Ciletuh, Sukabumi",
+      camera: "Dokumentasi HP member",
+      activity: "Perjalanan pantai",
+    },
   },
 ];
 
 const events = [
-  ["23 Mei", "Nonton bareng Persib Bandung menuju hattrick juara", "Sukabumi Kota"],
-  ["Coming Soon", "Trip Ujung Genteng", "Pantai Ujung Genteng"],
+  {
+    date: "Sabtu, 19 Sep 2026",
+    title: "Camping Selabintana",
+    place: "Selabintana, Sukabumi",
+    cover: "/images/camp.png",
+  },
+  {
+    date: "Coming Soon",
+    title: "Gunung Gede",
+    place: "Gunung Gede Pangrango, Jawa Barat",
+    cover: "/images/gede.jpg",
+  },
+  { date: "Coming Soon", title: "Trip Ujung Genteng", place: "Pantai Ujung Genteng" },
 ];
-
-const countdownMonth = "05";
-const countdownDay = "23";
-const countdownTime = "16:00:00+07:00";
-
-function getCountdown() {
-  const now = Date.now();
-  let year = 2026;
-  let target = new Date(`${year}-${countdownMonth}-${countdownDay}T${countdownTime}`).getTime();
-
-  while (target <= now) {
-    year += 1;
-    target = new Date(`${year}-${countdownMonth}-${countdownDay}T${countdownTime}`).getTime();
-  }
-
-  const distance = Math.max(target - now, 0);
-  const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((distance / (1000 * 60 * 60)) % 24);
-  const minutes = Math.floor((distance / (1000 * 60)) % 60);
-  const seconds = Math.floor((distance / 1000) % 60);
-
-  return [
-    { label: "Hari", value: String(days).padStart(2, "0") },
-    { label: "Jam", value: String(hours).padStart(2, "0") },
-    { label: "Menit", value: String(minutes).padStart(2, "0") },
-    { label: "Detik", value: String(seconds).padStart(2, "0") },
-  ];
-}
 
 export default function Home() {
   const rootRef = useRef<HTMLElement>(null);
-  const [countdown, setCountdown] = useState(getCountdown);
+  const [selectedGalleryIndex, setSelectedGalleryIndex] = useState<number | null>(null);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+  const selectedGallery = selectedGalleryIndex === null ? null : gallery[selectedGalleryIndex];
+  const selectedImage = selectedGallery?.images[selectedImageIndex];
+
+  const getGalleryShareText = (item: (typeof gallery)[number], image: string) => {
+    const url = `${window.location.origin}${image}`;
+    return {
+      url,
+      text: `${item.title} - ${item.description} ${url}`,
+    };
+  };
+
+  const copyGalleryShareText = async (item: (typeof gallery)[number], image: string) => {
+    const { text } = getGalleryShareText(item, image);
+    await navigator.clipboard?.writeText(text);
+  };
+
+  const shareToWhatsApp = (item: (typeof gallery)[number]) => {
+    const image = item.images[selectedImageIndex] ?? item.images[0];
+
+    if (!image) {
+      return;
+    }
+
+    const { text } = getGalleryShareText(item, image);
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  };
+
+  const shareToTelegram = (item: (typeof gallery)[number]) => {
+    const image = item.images[selectedImageIndex] ?? item.images[0];
+
+    if (!image) {
+      return;
+    }
+
+    const { url, text } = getGalleryShareText(item, image);
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  };
+
+  const shareToInstagram = async (item: (typeof gallery)[number]) => {
+    const image = item.images[selectedImageIndex] ?? item.images[0];
+
+    if (!image) {
+      return;
+    }
+
+    await copyGalleryShareText(item, image);
+    window.open("https://www.instagram.com/direct/inbox/", "_blank", "noopener,noreferrer");
+  };
+
+  const openGallery = (index: number) => {
+    setSelectedGalleryIndex(index);
+    setSelectedImageIndex(0);
+    setIsShareMenuOpen(false);
+  };
+
+  const showGalleryImage = (direction: 1 | -1) => {
+    if (!selectedGallery?.images.length) {
+      return;
+    }
+
+    setSelectedImageIndex((currentIndex) => {
+      const imageCount = selectedGallery.images.length;
+      return (currentIndex + direction + imageCount) % imageCount;
+    });
+  };
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -124,13 +195,39 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    setCountdown(getCountdown());
-    const timer = window.setInterval(() => {
-      setCountdown(getCountdown());
-    }, 1000);
+    if (selectedGalleryIndex === null) {
+      return;
+    }
 
-    return () => window.clearInterval(timer);
-  }, []);
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setSelectedGalleryIndex(null);
+        setIsShareMenuOpen(false);
+      }
+
+      if (event.key === "ArrowRight") {
+        setSelectedImageIndex((currentIndex) => {
+          const imageCount = selectedGallery?.images.length ?? 0;
+          return imageCount ? (currentIndex + 1) % imageCount : currentIndex;
+        });
+      }
+
+      if (event.key === "ArrowLeft") {
+        setSelectedImageIndex((currentIndex) => {
+          const imageCount = selectedGallery?.images.length ?? 0;
+          return imageCount ? (currentIndex - 1 + imageCount) % imageCount : currentIndex;
+        });
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedGalleryIndex, selectedGallery]);
 
   return (
     <main ref={rootRef} className="min-h-screen overflow-hidden bg-[#ffffff] text-[#1d1d1f]">
@@ -242,18 +339,21 @@ export default function Home() {
       <section id="galeri" className="section-reveal product-tile product-tile-light mx-auto w-full px-4">
         <div className="mx-auto w-[min(980px,100%)]">
         <p className="section-label">Galeri</p>
-        <h2 className="serif-section-title">Momen nongkrong, futsal, dan healing atau camping.</h2>
+        <h2 className="serif-section-title">Momen nongkrong, futsal, dan healling.</h2>
         <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3">
-          {gallery.map((item) => (
+          {gallery.map((item, index) => (
             <article key={item.title} className="gallery-card overflow-hidden bg-white">
-              {item.image ? (
-                <Image src={item.image} alt={item.title} width={900} height={640} className="h-72 w-full object-cover" />
+              {item.images[0] ? (
+                <button type="button" className="gallery-image-button" onClick={() => openGallery(index)} aria-label={`Buka foto ${item.title}`}>
+                  <Image src={item.images[0]} alt={item.title} width={900} height={640} className="gallery-thumb h-72 w-full object-cover" />
+                  {item.images.length > 1 ? <span className="gallery-count">{item.images.length} Foto</span> : null}
+                </button>
               ) : (
                 <div className="gallery-placeholder h-72" aria-label={`${item.title} belum ada foto`} />
               )}
               <div className="p-5">
                 <h3 className="text-[17px] font-semibold leading-[1.24]">{item.title}</h3>
-                <p className="mt-2 text-[14px] leading-[1.43] text-[#7a7a7a]">Dokumentasi kegiatan yang bisa diganti dengan foto asli komunitas.</p>
+                <p className="mt-2 text-[14px] leading-[1.43] text-[#7a7a7a]">{item.description}</p>
               </div>
             </article>
           ))}
@@ -261,55 +361,172 @@ export default function Home() {
         </div>
       </section>
 
+      {selectedGallery && selectedImage ? (
+        <div className="lightbox" role="dialog" aria-modal="true" aria-label={`Foto ${selectedGallery.title}`}>
+          <button
+            type="button"
+            className="lightbox-backdrop"
+            onClick={() => {
+              setSelectedGalleryIndex(null);
+              setIsShareMenuOpen(false);
+            }}
+            aria-label="Tutup lightbox"
+          />
+          <div className="lightbox-panel">
+            <div className="lightbox-media">
+              <Image src={selectedImage} alt={selectedGallery.title} width={1400} height={980} className="lightbox-image" priority />
+              {selectedGallery.images.length > 1 ? (
+                <>
+                  <button type="button" className="lightbox-arrow lightbox-arrow-left" onClick={() => showGalleryImage(-1)} aria-label="Lihat foto sebelumnya">
+                    ‹
+                  </button>
+                  <button type="button" className="lightbox-arrow lightbox-arrow-right" onClick={() => showGalleryImage(1)} aria-label="Lihat foto berikutnya">
+                    ›
+                  </button>
+                  <div className="lightbox-dots" aria-label="Pilih foto">
+                    {selectedGallery.images.map((image, index) => (
+                      <button
+                        type="button"
+                        key={image}
+                        className={index === selectedImageIndex ? "lightbox-dot lightbox-dot-active" : "lightbox-dot"}
+                        onClick={() => setSelectedImageIndex(index)}
+                        aria-label={`Lihat foto ${index + 1}`}
+                        aria-pressed={index === selectedImageIndex}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : null}
+            </div>
+            <aside className="lightbox-info">
+              <div>
+                <p className="section-label">Lightbox View</p>
+                <h2 className="lightbox-title">{selectedGallery.title}</h2>
+                {selectedGallery.images.length > 1 ? (
+                  <p className="lightbox-counter">Foto {selectedImageIndex + 1} dari {selectedGallery.images.length}</p>
+                ) : null}
+                <p className="lightbox-caption">{selectedGallery.description}</p>
+              </div>
+
+              <dl className="exif-grid" aria-label="Caption EXIF">
+                <div>
+                  <dt>Tahun</dt>
+                  <dd>{selectedGallery.exif.date}</dd>
+                </div>
+                <div>
+                  <dt>Lokasi</dt>
+                  <dd>{selectedGallery.exif.location}</dd>
+                </div>
+                <div>
+                  <dt>Kamera</dt>
+                  <dd>{selectedGallery.exif.camera}</dd>
+                </div>
+                <div>
+                  <dt>Aktivitas</dt>
+                  <dd>{selectedGallery.exif.activity}</dd>
+                </div>
+                <div>
+                  <dt>File</dt>
+                  <dd>{selectedImage.split("/").pop()}</dd>
+                </div>
+              </dl>
+
+              <div className="lightbox-actions">
+                <div className="share-menu">
+                  <button
+                    type="button"
+                    className="primary-chip"
+                    onClick={() => setIsShareMenuOpen((isOpen) => !isOpen)}
+                    aria-expanded={isShareMenuOpen}
+                    aria-haspopup="menu"
+                  >
+                    Bagikan
+                  </button>
+                  {isShareMenuOpen ? (
+                    <div className="share-menu-panel" role="menu" aria-label="Pilihan bagikan">
+                      <button type="button" className="share-option share-option-whatsapp" role="menuitem" onClick={() => shareToWhatsApp(selectedGallery)}>
+                        <span className="share-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M12.04 2.5a9.35 9.35 0 0 0-7.94 14.3l-.95 3.55 3.64-.93a9.35 9.35 0 1 0 5.25-16.92Zm0 1.72a7.62 7.62 0 0 1 6.48 11.63 7.63 7.63 0 0 1-9.92 2.5l-.36-.2-2.16.55.56-2.09-.23-.37a7.62 7.62 0 0 1 5.63-12.02Zm-3.18 3.9c-.16 0-.42.06-.64.3-.22.24-.84.82-.84 2 0 1.17.86 2.31.98 2.47.12.16 1.66 2.66 4.1 3.62 2.03.8 2.45.64 2.9.6.44-.04 1.43-.58 1.63-1.15.2-.56.2-1.05.14-1.15-.06-.1-.22-.16-.46-.28-.24-.12-1.43-.71-1.65-.79-.22-.08-.38-.12-.54.12-.16.24-.62.79-.76.95-.14.16-.28.18-.52.06-.24-.12-1.02-.38-1.95-1.2-.72-.64-1.2-1.43-1.35-1.67-.14-.24-.02-.37.1-.49.11-.1.24-.28.36-.42.12-.14.16-.24.24-.4.08-.16.04-.3-.02-.42-.06-.12-.54-1.3-.74-1.78-.2-.48-.4-.42-.54-.42h-.46Z" />
+                          </svg>
+                        </span>
+                        WhatsApp
+                      </button>
+                      <button type="button" className="share-option share-option-telegram" role="menuitem" onClick={() => shareToTelegram(selectedGallery)}>
+                        <span className="share-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M20.92 4.3 17.9 18.55c-.23 1.01-.82 1.26-1.66.78l-4.6-3.39-2.22 2.14c-.25.25-.45.45-.92.45l.33-4.68 8.52-7.7c.37-.33-.08-.52-.57-.19L6.25 12.59l-4.54-1.42c-.99-.31-1.01-.99.2-1.46L19.66 2.86c.82-.31 1.54.18 1.26 1.44Z" />
+                          </svg>
+                        </span>
+                        Telegram
+                      </button>
+                      <button type="button" className="share-option share-option-instagram" role="menuitem" onClick={() => shareToInstagram(selectedGallery)}>
+                        <span className="share-icon" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" focusable="false">
+                            <path d="M7.75 2.75h8.5a5 5 0 0 1 5 5v8.5a5 5 0 0 1-5 5h-8.5a5 5 0 0 1-5-5v-8.5a5 5 0 0 1 5-5Zm0 1.75a3.25 3.25 0 0 0-3.25 3.25v8.5a3.25 3.25 0 0 0 3.25 3.25h8.5a3.25 3.25 0 0 0 3.25-3.25v-8.5a3.25 3.25 0 0 0-3.25-3.25h-8.5Zm4.25 3.2a4.3 4.3 0 1 1 0 8.6 4.3 4.3 0 0 1 0-8.6Zm0 1.75a2.55 2.55 0 1 0 0 5.1 2.55 2.55 0 0 0 0-5.1Zm4.58-2.1a1.08 1.08 0 1 1 0 2.16 1.08 1.08 0 0 1 0-2.16Z" />
+                          </svg>
+                        </span>
+                        Instagram
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+                <a className="ghost-chip" href={selectedImage} download>
+                  Unduh
+                </a>
+                <button
+                  type="button"
+                  className="lightbox-close"
+                  onClick={() => {
+                    setSelectedGalleryIndex(null);
+                    setIsShareMenuOpen(false);
+                  }}
+                >
+                  Tutup
+                </button>
+              </div>
+            </aside>
+          </div>
+        </div>
+      ) : null}
+
       <section id="event" className="section-reveal product-tile product-tile-dark-2">
         <div className="mx-auto grid w-[min(980px,calc(100%-32px))] gap-8 md:grid-cols-[0.8fr_1.2fr]">
           <div>
             <p className="section-label">Kegiatan / Event</p>
             <h2 className="serif-section-title">Agenda yang jangan sampai kelewat.</h2>
             <p className="mt-5 max-w-md text-[17px] leading-[1.55] text-white/70">
-             Satu layar, satu dukungan demi Persib Bandung menuju hattrick juara. Hayu ramaikeun nobar jeung dukung Maung Bandung bareng-bareng.
+              Rencana kegiatan JRX berikutnya bakal muncul di sini begitu tanggal dan titik kumpulnya sudah siap.
             </p>
           </div>
           <div className="space-y-3">
-            <article className="nobar-card">
-              <div className="nobar-card-glow" aria-hidden="true" />
-              <div className="relative z-10">
-                <p className="nobar-kicker">Sabtu, 23 Mei 2026 · 16.00 WIB</p>
-                <h3>Nobar Persib Bandung Menuju Hattrick Juara</h3>
-                <p>
-                  Ngadukung Persib Bandung bareng-bareng, datang leuwih tiheula jeung ramaikeun nepi ka beres pertandingan.
-Konvoi 24 jam tanpa aturan 🔥
-                </p>
-                <div className="nobar-details" aria-label="Detail nobar Persib Bandung">
-                  <div>
-                    <span>Dress code</span>
-                    <strong>Biru, putih, atau hitam</strong>
-                  </div>
-                  <div>
-                    <span>Awal titik kumpul</span>
-                    <strong>Rumah Fadli</strong>
-                  </div>
-                  <div>
-                    <span>Pukul</span>
-                    <strong>14.00 WIB 🔥</strong>
-                  </div>
-                </div>
-                <div className="countdown-panel" aria-label="Hitung mundur menuju nobar Persib Bandung">
-                  {countdown.map((item, index) => (
-                    <div key={item.label} className="countdown-unit">
-                      <span className="countdown-value">{item.value}</span>
-                      <span className="countdown-label">{item.label}</span>
-                      {index < countdown.length - 1 ? <span className="countdown-separator">:</span> : null}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </article>
-            {events.map(([date, title, place]) => (
-              <article key={title} className="event-card grid gap-4 p-6 md:grid-cols-[120px_1fr]">
-                <div className="text-[21px] font-semibold leading-[1.19] text-[#7dd3fc]">{date}</div>
+            {events.map(({ date, title, place, cover }) => (
+              <article
+                key={title}
+                className={`event-card grid ${
+                  cover
+                    ? "grid-cols-[112px_1fr] gap-x-4 gap-y-2 p-4 md:grid-cols-[180px_120px_1fr] md:gap-4 md:p-6"
+                    : "gap-4 p-5 md:grid-cols-[120px_1fr] md:p-6"
+                }`}
+              >
+                {cover ? (
+                  <Image
+                    src={cover}
+                    alt={`Sampul ${title}`}
+                    width={640}
+                    height={480}
+                    className="row-span-2 h-auto w-full self-center rounded-xl md:row-auto md:max-w-[180px]"
+                  />
+                ) : null}
+                <div className="self-end text-[18px] font-semibold leading-[1.19] text-[#7dd3fc] md:text-[21px]">{date}</div>
                 <div>
-                  <h3 className="text-[17px] font-semibold leading-[1.24]">{title}</h3>
+                  <h3
+                    className={`font-semibold leading-[1.24] ${
+                      title === "Camping Selabintana" ? "font-serif text-[22px] italic" : "text-[17px]"
+                    }`}
+                  >
+                    {title}
+                  </h3>
                   <p className="mt-1 text-[14px] leading-[1.43] text-[#cccccc]">{place}</p>
                 </div>
               </article>
