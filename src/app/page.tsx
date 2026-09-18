@@ -505,8 +505,8 @@ export default function Home() {
                 key={title}
                 className={`event-card grid ${
                   cover
-                    ? "grid-cols-[112px_1fr] gap-x-4 gap-y-2 p-4 md:grid-cols-[180px_120px_1fr] md:gap-4 md:p-6"
-                    : "gap-4 p-5 md:grid-cols-[120px_1fr] md:p-6"
+                    ? "grid-cols-[112px_1fr] items-center gap-x-4 gap-y-2 p-4 sm:grid-cols-[132px_1fr] md:grid-cols-[180px_140px_1fr] md:gap-5 md:p-6"
+                    : "items-center gap-4 p-5 md:grid-cols-[140px_1fr] md:p-6"
                 }`}
               >
                 {cover ? (
@@ -518,8 +518,8 @@ export default function Home() {
                     className="row-span-2 h-auto w-full self-center rounded-xl md:row-auto md:max-w-[180px]"
                   />
                 ) : null}
-                <div className="self-end text-[18px] font-semibold leading-[1.19] text-[#7dd3fc] md:text-[21px]">{date}</div>
-                <div>
+                <div className="self-end text-[18px] font-semibold leading-[1.19] text-[#7dd3fc] md:self-center md:text-[21px]">{date}</div>
+                <div className="md:self-center">
                   <h3
                     className={`font-semibold leading-[1.24] ${
                       title === "Camping Selabintana" ? "font-serif text-[22px] italic" : "text-[17px]"
